@@ -44,6 +44,16 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
+/* ===== RSVP ===== */
+
+  .bus-group {
+    display: none;
+  }
+
+  .bus-group.show {
+    display: block;
+  }
+
 /* ===== NAVIGATION ===== */
 nav {
   position: fixed;
@@ -942,6 +952,7 @@ footer {
   .rsvp {
     padding: 80px 24px;
   }
+
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -1184,7 +1195,8 @@ footer {
   <div class="rsvp-inner">
     <h2 class="section-title" data-ca="Confirmació" data-fr="Confirmation">Confirmació</h2>
     <p class="rsvp-text" data-ca="Si us plau, ompliu tots els camps. Confirmeu la vostra assistència abans de l'1 de juny." data-fr="Complétez tous les champs du formulaire. Veuillez confirmer votre présence avant le 1er juin.">Si us plau, ompliu tots els camps. Confirmeu la vostra assistència abans de l'1 de juny.</p>
-    
+    <p class="rsvp-text" data-ca="Hi haurà un autocar, surt a les 16.30h i torna a les 4.00h." data-fr="Il y aura un bus, il part à 16h30 et revient à 4h00.">Hi haurà un autocar, surt a les 16.30h i torna a les 4.00h.</p>
+
     <div class="rsvp-form" id="rsvpForm">
       <div class="form-row">
         <div class="form-group">
@@ -1207,6 +1219,20 @@ footer {
           <div class="radio-option">
             <input type="radio" id="no" name="assistencia" value="No">
             <label class="radio-label" for="no" data-ca="No puc venir" data-fr="Je ne peux pas venir">No puc venir</label>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-group bus-group" id="busGroup">
+        <label class="form-label" data-ca="Com et desplaçaràs?" data-fr="Comment vas-tu te déplacer ?">Com et desplaçaràs?</label>
+        <div class="radio-group">
+          <div class="radio-option">
+            <input type="radio" id="bus" name="bus" value="Sí" required>
+            <label class="radio-label" for="bus" data-ca="En autocar" data-fr="En bus">En autocar</label>
+          </div>
+          <div class="radio-option">
+            <input type="radio" id="cotxe" name="bus" value="No">
+            <label class="radio-label" for="cotxe" data-ca="En cotxe" data-fr="En voiture">En cotxe</label>
           </div>
         </div>
       </div>
@@ -1326,6 +1352,7 @@ function copyIBAN() {
   });
 }
 
+
 // === Language Toggle ===
 document.querySelectorAll('.lang-btn').forEach(btn => {
   btn.addEventListener('click', () => {
@@ -1338,6 +1365,22 @@ document.querySelectorAll('.lang-btn').forEach(btn => {
     });
   });
 });
+
+// === RSVP - after yes ===
+document.querySelectorAll('input[name="assistencia"]').forEach(radio => {
+  radio.addEventListener('change', () => {
+    const busGroup = document.getElementById('busGroup');
+    if (radio.value === 'Sí') {
+      busGroup.classList.add('show');
+    } else {
+      busGroup.classList.remove('show');
+      // Clear bus selection when they pick "No"
+      document.querySelectorAll('input[name="bus"]').forEach(r => r.checked = false);
+    }
+  });
+});
+
+
 // === RSVP Form ===
 const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzJgO3uySYHoFhCKzbPZl2cC-IRoF552e1mcvkzyXFPx7GCyS0Sesa2zYev8N2oqkUF/exec';
 
@@ -1345,6 +1388,7 @@ document.getElementById('submitBtn').addEventListener('click', async () => {
   const nom = document.getElementById('nom').value.trim();
   const cognom = document.getElementById('cognom').value.trim();
   const assistencia = document.querySelector('input[name="assistencia"]:checked');
+  const bus = document.querySelector('input[name="bus"]:checked');
   const dieta = document.getElementById('dieta').value.trim();
   const canco = document.getElementById('canco').value.trim();
   const btn = document.getElementById('submitBtn');
@@ -1368,10 +1412,12 @@ document.getElementById('submitBtn').addEventListener('click', async () => {
         nom: nom,
         cognom: cognom,
         assistencia: assistencia.value,
+        bus: bus ? bus.value : '',
         dieta: dieta,
         canco: canco
       })
     });
+
     
     document.getElementById('rsvpForm').style.display = 'none';
     document.getElementById('formSuccess').classList.add('show');
